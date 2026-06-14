@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: ms-usuario-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ms_usuario
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_USER: ms_usuario_app
+      MYSQL_PASSWORD: ms_usuario_app1234
+    ports:
+      - "3310:3306"
+    volumes:
+      - mysql_data_v2:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .    #el contedor va a buldear la imagen  del Dockerfile, que se encuentra en el directorio raíz del proyecto
+    container_name: ms-usuario-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - default
+      - ticketti-network
+
+      #variables de entorno para la conexión a la base de datos, que se pasan al contenedor de la aplicación
+      #hay que pensar que estas variables de entorno son para que el contenedor de la aplicación pueda conectarse a la base de datos MySQL, que se ejecuta en otro contenedor llamado "mysql". Por eso, se utiliza el nombre del servicio "mysql" como host en la URL de conexión a la base de datos.
+
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ms_usuario
+      - SPRING_DATASOURCE_USERNAME=ms_usuario_app
+      - SPRING_DATASOURCE_PASSWORD=ms_usuario_app1234
+      - SERVER_PORT=8085
+    ports:
+      - "8085:8085"
+
+      #volumes: para ocupar la configuración por defecto
+
+volumes:
+  mysql_data_v2:
+
+networks:
+  ticketti-network:
+    external: true

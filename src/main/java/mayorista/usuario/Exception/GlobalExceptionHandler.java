@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice // intercepta todos los errores de todos los controllers automáticamente
+@RestControllerAdvice // intercepta todos los errores de todos los controllers automaticamente
 public class GlobalExceptionHandler {
 
-    // captura errores de validación (@NotBlank, @Email, etc.)
+    // captura errores de validacion (@NotBlank, @Email, etc.)
+    // se activa cuando llegan datos invalidos como un correo sin @ o un campo vacio
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> errores = new HashMap<>();
@@ -22,20 +23,22 @@ public class GlobalExceptionHandler {
             errores.put(error.getField(), error.getDefaultMessage())
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores); // retorna 400 con los errores
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores); // retorna 400
     }
 
-    // captura errores de lógica de negocio (ej: "El correo ya existe")
+    // captura errores de logica de negocio
+    // se activa cuando el Service lanza un error como "El correo ya existe" o "Usuario no encontrado"
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("mensaje", ex.getMessage())); // retorna 409 con el mensaje de error
+                .body(Map.of("mensaje", ex.getMessage())); // retorna 409
     }
 
-    // captura cualquier otro error inesperado
+    // captura cualquier otro error inesperado y muestra el mensaje real para poder identificarlo
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
+        ex.printStackTrace(); // imprime el error completo en los logs
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("mensaje", "Error interno del servidor")); // retorna 500
+                .body(Map.of("mensaje", ex.getMessage() != null ? ex.getMessage() : "Error interno del servidor")); // retorna 500
     }
 }
