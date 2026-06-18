@@ -26,9 +26,6 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    networks:
-      - default
-      - ticketti-network
 
       #variables de entorno para la conexión a la base de datos, que se pasan al contenedor de la aplicación
       #hay que pensar que estas variables de entorno son para que el contenedor de la aplicación pueda conectarse a la base de datos MySQL, que se ejecuta en otro contenedor llamado "mysql". Por eso, se utiliza el nombre del servicio "mysql" como host en la URL de conexión a la base de datos.
@@ -45,7 +42,3 @@ services:
 
 volumes:
   mysql_data_v2:
-
-networks:
-  ticketti-network:
-    external: true

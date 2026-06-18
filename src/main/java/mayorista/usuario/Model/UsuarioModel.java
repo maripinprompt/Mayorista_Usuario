@@ -3,7 +3,7 @@ package mayorista.usuario.Model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "usuarios")
@@ -14,18 +14,19 @@ public class UsuarioModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore // el id lo genera MySQL automaticamente, no se acepta ni se muestra en el JSON
+    // permite que el id se muestre en las respuestas GET, pero bloquea que se envie manualmente en POST/PUT
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
-    @NotBlank // valida que el nombre no venga vacio
+    @NotBlank
     private String nombre;
 
-    @Email // valida que tenga formato de correo
-    @NotBlank // valida que no venga vacio
-    @Column(unique = true) // no pueden existir dos usuarios con el mismo correo
+    @Email
+    @NotBlank
+    @Column(unique = true)
     private String correo;
 
-    @NotBlank // valida que la contrasena no venga vacia
+    @NotBlank
     private String contrasena;
 
     private String telefono;
